@@ -1,0 +1,67 @@
+services:
+  mysql:
+    container_name: ms_my_sql
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: my_database
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  ms_my_sql_admin:
+    container_name: ms_my_sql_admin
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER:-user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-userpassword}
+    ports:
+      - "8080:80"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo
+    container_name: mongo_db
+    ports:
+     - "27017:27017"
+    volumes:
+      - mongo:/data
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+
+  mongo-express:
+    container_name: ms_mongo_express
+    image: mongo-express
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=root
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+
+  mail-dev:
+    container_name: ms_mail_dev
+    image: maildev/maildev
+    ports:
+      - 1080:1080
+      - 1025:1025
+
+networks:
+  microservices-net:
+    driver: bridge
+
+volumes:
+  mysql:
+  mongo:
+
